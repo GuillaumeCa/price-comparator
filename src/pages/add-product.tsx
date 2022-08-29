@@ -1,7 +1,20 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { useSession } from "../components/AuthProvider";
 import { BaseLayout } from "../layout/BaseLayout";
 
 export default function AddProduct() {
+  const session = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log(session);
+    if (!session) {
+      router.push("/login");
+    }
+  }, [session]);
+
   return (
     <BaseLayout>
       <Link href="/">

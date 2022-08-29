@@ -21,13 +21,13 @@ export default function Login() {
 
   return (
     <BaseLayout>
-      <div className="flex">
-        <div className="">
-          <h2 className="text-3xl">Login</h2>
-          <p className="">Sign in via magic link with your email below</p>
+      <div className="flex align-middle justify-center">
+        <div className="p-4 bg-gray-600 rounded-md">
+          <h2 className="text-2xl font-bold">Login</h2>
+          <p className="mt-3">Sign in via magic link with your email below</p>
           <div>
             <input
-              className=""
+              className="my-3 w-full px-2 py-1 rounded text-gray-700"
               type="email"
               placeholder="Your email"
               value={email}
@@ -40,7 +40,7 @@ export default function Login() {
                 e.preventDefault();
                 handleLogin(email);
               }}
-              className=""
+              className="bg-gray-400 w-full rounded px-2 py-1 font-semibold text-gray-700"
               disabled={loading}
             >
               <span>{loading ? "Loading" : "Send magic link"}</span>
