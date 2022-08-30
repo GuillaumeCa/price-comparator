@@ -143,10 +143,6 @@ function EvolutionGraph({ product }: { product: ProductWithRates }) {
 
   const chartRef = useRef();
 
-  function handleMouseMove(event: any) {
-    // console.log(event);
-  }
-
   return (
     <div className="mt-4">
       <Chart
@@ -155,7 +151,6 @@ function EvolutionGraph({ product }: { product: ProductWithRates }) {
         plugins={plugins}
         options={options}
         data={graphData}
-        onMouseMove={handleMouseMove}
       />
     </div>
   );
@@ -172,15 +167,17 @@ export function ProductCompareRow({
 
   return (
     <li className="p-4">
-      <div className="flex items-center mb-3">
-        <h2 className="text-2xl font-medium">{p.name}</h2>
-        <p className="ml-3 px-1 rounded text-sm bg-gray-400 text-gray-700">
-          Released on {dayjs(p.release_date).format("DD/MM/YYYY")} (
-          {dayjs(p.release_date).fromNow()})
-        </p>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col md:flex-row md:items-center">
+          <h2 className="text-2xl font-medium mr-3">{p.name}</h2>
+          <p className="px-1 mt-1 md:mt-0 rounded text-sm bg-gray-400 text-gray-700">
+            Released on {dayjs(p.release_date).format("DD/MM/YYYY")} (
+            {dayjs(p.release_date).fromNow()})
+          </p>
+        </div>
 
         <button
-          className="ml-auto"
+          className="p-2"
           onClick={() => setShowEvolution(!showEvolution)}
         >
           <ChartBar />

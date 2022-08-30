@@ -19,6 +19,9 @@ const Home: NextPage<{
     fetchProducts()
   );
 
+  const publicProducts = products?.filter((p) => !p.user_id);
+  const privateProducts = products?.filter((p) => p.user_id);
+
   return (
     <BaseLayout>
       {!session && !loading && <LinkButton href="/login">Login</LinkButton>}
@@ -28,9 +31,9 @@ const Home: NextPage<{
           Logout
         </Button>
       )}
-
-      <ul className="mt-7 bg-gray-600 rounded-lg divide-y divide-gray-500">
-        {products?.map((p) => (
+      <h2 className="text-3xl mt-7">Products</h2>
+      <ul className="mt-3 bg-gray-600 rounded-lg divide-y divide-gray-500">
+        {publicProducts?.map((p) => (
           <ProductCompareRow
             key={p.id}
             product={p}
@@ -39,9 +42,24 @@ const Home: NextPage<{
         ))}
       </ul>
       {session && !loading && (
-        <div className="mt-4 text-right">
-          <LinkButton href="/add-product">Add product</LinkButton>
-        </div>
+        <>
+          <div className="flex justify-between mt-7 items-center">
+            <h2 className="text-3xl">My Products</h2>
+            <div>
+              <LinkButton href="/add-product">Add product</LinkButton>
+            </div>
+          </div>
+          {privateProducts?.length === 0 && <p>Aucun produit actuellement</p>}
+          <ul className="mt-3 bg-gray-600 rounded-lg divide-y divide-gray-500">
+            {privateProducts?.map((p) => (
+              <ProductCompareRow
+                key={p.id}
+                product={p}
+                currentRates={currentRates}
+              />
+            ))}
+          </ul>
+        </>
       )}
     </BaseLayout>
   );
