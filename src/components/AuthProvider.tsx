@@ -19,8 +19,8 @@ export function AuthProvider({ children }: { children: any }) {
 
       if (session) {
         setSession(session);
-        setLoading(false);
       }
+      setLoading(false);
     }
 
     getInitialSession();
