@@ -139,7 +139,7 @@ function EvolutionGraph({ product }: { product: ProductWithRates }) {
         },
       ],
     };
-  }, [data]);
+  }, [data, product.release_price, product.release_price_compare]);
 
   const chartRef = useRef();
 

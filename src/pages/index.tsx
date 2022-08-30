@@ -49,6 +49,7 @@ const Home: NextPage<{
 
 export async function getServerSideProps(ctx: NextPageContext) {
   const currentRates = await fetchCurrentRates();
+
   return { props: { currentRates } };
 }
 

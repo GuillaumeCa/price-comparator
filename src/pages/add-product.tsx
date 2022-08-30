@@ -1,4 +1,5 @@
-import { Form, Formik } from "formik";
+import dayjs from "dayjs";
+import { Form, Formik, useField } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -12,11 +13,29 @@ import { BaseLayout } from "../layout/BaseLayout";
 
 const AddProductForm = z.object({
   productName: z.string(),
-  releaseDate: z.string(),
+  releaseDate: z.date().max(new Date()),
   releasePrice: z.number().min(0).nullable(),
   releasePriceCompare: z.number().min(0).nullable(),
   fixedTax: z.number().min(0),
 });
+
+function DateFormInput() {
+  const [field, meta, helpers] = useField("releaseDate");
+
+  return (
+    <FormInput
+      type="date"
+      name="releaseDate"
+      label="Release Date"
+      max={dayjs().format("YYYY-MM-DD")}
+      value={dayjs(field.value).format("YYYY-MM-DD")}
+      onChange={(e) => {
+        console.log(e.target.valueAsDate);
+        helpers.setValue(e.target.valueAsDate);
+      }}
+    />
+  );
+}
 
 export default function AddProduct() {
   const { session, loading } = useSession();
@@ -42,7 +61,7 @@ export default function AddProduct() {
         <Formik
           initialValues={{
             productName: "",
-            releaseDate: undefined,
+            releaseDate: dayjs().add(-1, "day").toDate(),
             releasePrice: undefined,
             releasePriceCompare: undefined,
             fixedTax: 0,
@@ -51,7 +70,7 @@ export default function AddProduct() {
           onSubmit={async (values) => {
             const res = await insertProduct({
               name: values.productName,
-              release_date: values.releaseDate,
+              release_date: dayjs(values.releaseDate).toISOString(),
               release_price: values.releasePrice,
               release_price_compare: values.releasePriceCompare,
               fixed_tax: values.fixedTax,
@@ -76,7 +95,7 @@ export default function AddProduct() {
                 label="Product Name"
                 placeholder="Product name"
               />
-              <FormInput type="date" name="releaseDate" label="Release Date" />
+              <DateFormInput />
               <FormInput
                 type="number"
                 name="releasePrice"
