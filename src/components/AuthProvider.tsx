@@ -2,9 +2,15 @@ import { Session } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../api/supabase";
 
-const AuthContext = createContext<{ session: Session | null } | null>(null);
+type AuthState = {
+  session: Session | null;
+  loading: boolean;
+};
+
+const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: any }) {
+  const [loading, setLoading] = useState(true);
   const [currentSession, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -13,6 +19,7 @@ export function AuthProvider({ children }: { children: any }) {
 
       if (session) {
         setSession(session);
+        setLoading(false);
       }
     }
 
@@ -21,6 +28,7 @@ export function AuthProvider({ children }: { children: any }) {
     const { data: subscription } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
+        setLoading(false);
       }
     );
 
@@ -30,17 +38,17 @@ export function AuthProvider({ children }: { children: any }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session: currentSession }}>
+    <AuthContext.Provider value={{ session: currentSession, loading }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useSession(): Session | null {
+export function useSession(): AuthState {
   const ctx = useContext(AuthContext);
   if (!ctx) {
     throw new Error("missing auth provider");
   }
 
-  return ctx.session;
+  return ctx;
 }

@@ -14,14 +14,16 @@ dayjs.extend(relativeTime);
 const Home: NextPage<{
   currentRates: CurrentRatesResponse;
 }> = ({ currentRates }) => {
-  const session = useSession();
-  const { data: products } = useQuery(["products"], () => fetchProducts());
+  const { session, loading } = useSession();
+  const { data: products } = useQuery(["products", session?.access_token], () =>
+    fetchProducts()
+  );
 
   return (
     <BaseLayout>
-      {!session && <LinkButton href="/login">Login</LinkButton>}
-      {session && <p>Welcome !</p>}
-      {session && (
+      {!session && !loading && <LinkButton href="/login">Login</LinkButton>}
+      {session && !loading && <p>Welcome !</p>}
+      {session && !loading && (
         <Button type="button" onClick={() => supabase.auth.signOut()}>
           Logout
         </Button>
@@ -36,7 +38,7 @@ const Home: NextPage<{
           />
         ))}
       </ul>
-      {session && (
+      {session && !loading && (
         <div className="mt-4 text-right">
           <LinkButton href="/add-product">Add product</LinkButton>
         </div>

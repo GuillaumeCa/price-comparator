@@ -11,6 +11,7 @@ interface Product {
   release_price_compare: number;
   currency_compare: "EUR";
   fixed_tax: number;
+  user_id: string;
 }
 
 export interface ProductWithRates extends Product {
@@ -52,4 +53,8 @@ export async function fetchProducts(): Promise<ProductWithRates[]> {
   }
 
   return newProducts;
+}
+
+export function insertProduct(product: Partial<Product>) {
+  return supabase.from<Product>("products").insert(product);
 }

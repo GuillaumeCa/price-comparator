@@ -6,7 +6,6 @@ import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(() => new QueryClient());
-  console.log("_app");
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
