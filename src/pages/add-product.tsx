@@ -49,7 +49,7 @@ export default function AddProduct() {
   }, [session, loading]);
 
   return (
-    <BaseLayout>
+    <BaseLayout showLogin>
       <Link href="/">
         <a className="px-2 py-1 bg-gray-700 hover:bg-gray-500 rounded-md">
           View products

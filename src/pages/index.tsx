@@ -1,15 +1,48 @@
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import type { NextPage, NextPageContext } from "next";
+import { useState } from "react";
 import { useQuery } from "react-query";
 import { CurrentRatesResponse, fetchCurrentRates } from "../api/exchangerate";
-import { fetchProducts } from "../api/products";
-import { supabase } from "../api/supabase";
+import { fetchProducts, ProductWithRates } from "../api/products";
 import { useSession } from "../components/AuthProvider";
-import { Button, LinkButton } from "../components/Button";
+import { LinkButton } from "../components/Button";
 import { ProductCompareRow } from "../components/ProductCompare";
+import { Search } from "../components/Search";
 import { BaseLayout } from "../layout/BaseLayout";
 dayjs.extend(relativeTime);
+
+enum ProductView {
+  ALL,
+  FEATURED,
+  PERSONAL,
+}
+
+function sortProducts(p1: ProductWithRates, p2: ProductWithRates): number {
+  return p1.name.localeCompare(p2.name);
+}
+
+function filterSearch(
+  products: ProductWithRates[],
+  search: string
+): ProductWithRates[] {
+  return products.filter(
+    (p) => search === "" || p.name.toLowerCase().includes(search.toLowerCase())
+  );
+}
+
+function filterByView(products: ProductWithRates[], view: ProductView) {
+  return products.filter((p) => {
+    switch (view) {
+      case ProductView.ALL:
+        return true;
+      case ProductView.FEATURED:
+        return !p.user_id;
+      case ProductView.PERSONAL:
+        return p.user_id;
+    }
+  });
+}
 
 const Home: NextPage<{
   currentRates: CurrentRatesResponse;
@@ -19,21 +52,55 @@ const Home: NextPage<{
     fetchProducts()
   );
 
-  const publicProducts = products?.filter((p) => !p.user_id);
-  const privateProducts = products?.filter((p) => p.user_id);
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState(ProductView.ALL);
+
+  const productsViewed = filterSearch(
+    filterByView(products ?? [], view).sort(sortProducts) ?? [],
+    search
+  );
 
   return (
-    <BaseLayout>
-      {!session && !loading && <LinkButton href="/login">Login</LinkButton>}
-      {session && !loading && <p>Welcome !</p>}
-      {session && !loading && (
-        <Button type="button" onClick={() => supabase.auth.signOut()}>
-          Logout
-        </Button>
-      )}
-      <h2 className="text-3xl mt-7">Products</h2>
+    <BaseLayout showLogin>
+      <div className="flex mt-3 justify-between">
+        <div className="divide-x-2 divide-gray-800">
+          <button
+            className={`px-3 py-1 bg-gray-700 ${
+              view === ProductView.ALL ? "bg-gray-500" : ""
+            } hover:bg-gray-500 rounded-l-md`}
+            onClick={() => setView(ProductView.ALL)}
+          >
+            All
+          </button>
+          <button
+            className={`px-3 py-1 bg-gray-700 ${
+              view === ProductView.FEATURED ? "bg-gray-500" : ""
+            } hover:bg-gray-500`}
+            onClick={() => setView(ProductView.FEATURED)}
+          >
+            Featured
+          </button>
+          <button
+            className={`px-3 py-1 bg-gray-700 ${
+              view === ProductView.PERSONAL ? "bg-gray-500" : ""
+            } hover:bg-gray-500 rounded-r-md`}
+            onClick={() => setView(ProductView.PERSONAL)}
+          >
+            Personal
+          </button>
+        </div>
+        {session && !loading && (
+          <div>
+            <LinkButton href="/add-product">Add product</LinkButton>
+          </div>
+        )}
+      </div>
+
+      <Search value={search} onChange={setSearch} />
+
+      {productsViewed?.length === 0 && <p>Aucun produit actuellement</p>}
       <ul className="mt-3 bg-gray-600 rounded-lg divide-y divide-gray-500">
-        {publicProducts?.map((p) => (
+        {productsViewed?.map((p) => (
           <ProductCompareRow
             key={p.id}
             product={p}
@@ -41,26 +108,6 @@ const Home: NextPage<{
           />
         ))}
       </ul>
-      {session && !loading && (
-        <>
-          <div className="flex justify-between mt-7 items-center">
-            <h2 className="text-3xl">My Products</h2>
-            <div>
-              <LinkButton href="/add-product">Add product</LinkButton>
-            </div>
-          </div>
-          {privateProducts?.length === 0 && <p>Aucun produit actuellement</p>}
-          <ul className="mt-3 bg-gray-600 rounded-lg divide-y divide-gray-500">
-            {privateProducts?.map((p) => (
-              <ProductCompareRow
-                key={p.id}
-                product={p}
-                currentRates={currentRates}
-              />
-            ))}
-          </ul>
-        </>
-      )}
     </BaseLayout>
   );
 };

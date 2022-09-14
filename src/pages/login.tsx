@@ -35,6 +35,7 @@ export default function Login() {
               className="my-3 w-full px-2 py-1 rounded text-gray-700"
               type="email"
               placeholder="Your email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />

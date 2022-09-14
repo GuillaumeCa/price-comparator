@@ -198,13 +198,13 @@ export function ProductCompareRow({
           info="The price set at release in €"
         />
         <PriceItem
-          label="Price computed at release € (+tax)"
+          label="Release Price Computed € (+tax)"
           price={Math.round(p.release_price * p.rates.EUR * 1.2 + p.fixed_tax)}
           currency="EUR"
           info="The price you should have payed at release in €"
         />
         <PriceItem
-          label="Current Price € (+tax)"
+          label="Computed Price Now € (+tax)"
           price={Math.round(
             p.release_price * currentRates.rates[p.currency_compare] * 1.2 +
               p.fixed_tax
