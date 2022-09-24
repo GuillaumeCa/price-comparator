@@ -48,8 +48,9 @@ const Home: NextPage<{
   currentRates: CurrentRatesResponse;
 }> = ({ currentRates }) => {
   const { session, loading } = useSession();
-  const { data: products } = useQuery(["products", session?.access_token], () =>
-    fetchProducts()
+  const { data: products, isLoading: isProductsLoading } = useQuery(
+    ["products", session?.access_token],
+    () => fetchProducts()
   );
 
   const [search, setSearch] = useState("");
@@ -62,12 +63,14 @@ const Home: NextPage<{
 
   return (
     <BaseLayout showLogin>
+      <Search value={search} onChange={setSearch} />
+
       <div className="flex mt-3 justify-between">
         <div className="divide-x-2 divide-gray-800">
           <button
             className={`px-3 py-1 bg-gray-700 ${
               view === ProductView.ALL ? "bg-gray-500" : ""
-            } hover:bg-gray-500 rounded-l-md`}
+            } hover:bg-gray-500 active:bg-gray-400 rounded-l-md`}
             onClick={() => setView(ProductView.ALL)}
           >
             All
@@ -75,7 +78,7 @@ const Home: NextPage<{
           <button
             className={`px-3 py-1 bg-gray-700 ${
               view === ProductView.FEATURED ? "bg-gray-500" : ""
-            } hover:bg-gray-500`}
+            } hover:bg-gray-500 active:bg-gray-400`}
             onClick={() => setView(ProductView.FEATURED)}
           >
             Featured
@@ -83,7 +86,7 @@ const Home: NextPage<{
           <button
             className={`px-3 py-1 bg-gray-700 ${
               view === ProductView.PERSONAL ? "bg-gray-500" : ""
-            } hover:bg-gray-500 rounded-r-md`}
+            } hover:bg-gray-500 active:bg-gray-400 rounded-r-md`}
             onClick={() => setView(ProductView.PERSONAL)}
           >
             Personal
@@ -96,9 +99,19 @@ const Home: NextPage<{
         )}
       </div>
 
-      <Search value={search} onChange={setSearch} />
+      {isProductsLoading && <p className="mt-2 text-gray-500">Chargement...</p>}
 
-      {productsViewed?.length === 0 && <p>Aucun produit actuellement</p>}
+      {!isProductsLoading && productsViewed?.length === 0 && (
+        <p className="mt-2 text-gray-500">Aucun produit</p>
+      )}
+      {!session && !loading && view === ProductView.PERSONAL && (
+        <>
+          <div className="mt-2 p-3 bg-gray-600 rounded-md inline-block">
+            <p className="mb-3">Se connecter pour ajouter des produits</p>
+            <LinkButton href="/login">Login</LinkButton>
+          </div>
+        </>
+      )}
       <ul className="mt-3 bg-gray-600 rounded-lg divide-y divide-gray-500">
         {productsViewed?.map((p) => (
           <ProductCompareRow
