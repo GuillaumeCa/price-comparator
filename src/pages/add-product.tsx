@@ -50,10 +50,11 @@ export default function AddProduct() {
 
   return (
     <BaseLayout showLogin>
-      <Link href="/">
-        <a className="px-2 py-1 bg-gray-700 hover:bg-gray-500 rounded-md">
-          View products
-        </a>
+      <Link
+        href="/"
+        className="px-2 py-1 bg-gray-700 hover:bg-gray-500 rounded-md"
+      >
+        View products
       </Link>
       <div className="mt-3 p-4 bg-gray-600 rounded-md max-w-md">
         <h2 className="text-2xl font-bold">Product</h2>

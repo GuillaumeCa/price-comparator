@@ -21,9 +21,7 @@ export function BaseLayout({
 
       <header className="flex justify-between">
         <Link href="/">
-          <a>
-            <h1 className="mb-6 font-bold text-4xl">Price Comparator</h1>
-          </a>
+          <h1 className="mb-6 font-bold text-4xl">Price Comparator</h1>
         </Link>
         {showLogin && (
           <div>

@@ -24,10 +24,11 @@ export function LinkButton({
   href: string;
 }) {
   return (
-    <Link href={href}>
-      <a className="px-2 py-1 bg-gray-700 hover:bg-gray-500 rounded-md">
-        {children}
-      </a>
+    <Link
+      href={href}
+      className="px-2 py-1 bg-gray-700 hover:bg-gray-500 rounded-md"
+    >
+      {children}
     </Link>
   );
 }
