@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    container_name: price-comparator
+    restart: unless-stopped
+    ports:
+      - "9000:80"
+    deploy:
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        order: start-first
+    mem_limit: 100m

@@ -1,17 +1,16 @@
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useMemo, useRef, useState } from "react";
 import { Chart } from "react-chartjs-2";
-import { useQuery } from "react-query";
-import {
-  CurrentRatesResponse,
-  dateToDateKey,
-  fetchRatesRange,
-} from "../api/exchangerate";
 import { ProductWithRates } from "../api/products";
 import { ChartBar, QuestionMarkCircle } from "./Icons";
 
+dayjs.extend(relativeTime);
+
+import { useQuery } from "@tanstack/react-query";
 import {
   CategoryScale,
+  ChartData,
   Chart as ChartJS,
   ChartOptions,
   Legend,
@@ -22,6 +21,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import { CurrentRatesResponse } from "../api/exchangerate";
 
 ChartJS.register(
   CategoryScale,
@@ -60,7 +60,7 @@ function PriceItem(props: {
   );
 }
 
-const options: ChartOptions<"line"> = {
+const options = {
   responsive: true,
   plugins: {
     legend: {
@@ -85,7 +85,7 @@ const options: ChartOptions<"line"> = {
       },
     },
   },
-};
+} satisfies ChartOptions<"line">;
 
 const plugins = [
   {
@@ -108,20 +108,37 @@ const plugins = [
   },
 ];
 
-function EvolutionGraph({ product }: { product: ProductWithRates }) {
-  const { data } = useQuery(["evolution-graph-compare", product.id], () => {
-    return fetchRatesRange(
-      dateToDateKey(new Date(product.release_date)),
-      dateToDateKey(new Date())
-    );
+function getHistoryRates(
+  date: string
+): Promise<{ date: string; usd: number }[]> {
+  return fetch("/api/rates?date=" + date).then((res) => res.json());
+}
+
+function EvolutionGraph({
+  product,
+  currentRate,
+}: {
+  product: ProductWithRates;
+  currentRate: CurrentRatesResponse;
+}) {
+  const { data: historicRates } = useQuery({
+    queryKey: ["rates-history", product.product.release_date],
+    queryFn: () => getHistoryRates(product.product.release_date),
   });
 
   const graphData = useMemo(() => {
-    const labels = Object.keys(data?.rates ?? {});
-    const rates = Object.values(data?.rates ?? {});
-    const computed = rates.map(
-      (rate) => product.release_price * rate.EUR * 1.2
+    const keyVal: Record<string, number> = {};
+    historicRates?.forEach((hr) => {
+      keyVal[dayjs(hr.date).format("YYYY-MM-DD")] = hr.usd;
+    });
+
+    keyVal[dayjs().format("YYYY-MM-DD")] = currentRate.rates.USD;
+
+    const labels = Object.keys(keyVal);
+    const computed = Object.values(keyVal).map(
+      (rate) => product.product.release_price * (1 / rate) * 1.2
     );
+
     return {
       labels,
       datasets: [
@@ -132,16 +149,20 @@ function EvolutionGraph({ product }: { product: ProductWithRates }) {
           tension: 0.1,
         },
         {
-          data: labels.map(() => product.release_price_compare),
+          data: labels.map(() => product.product.release_price_compare),
           borderColor: "#5eead4",
           pointRadius: 0,
           tension: 0.1,
         },
       ],
-    };
-  }, [data, product.release_price, product.release_price_compare]);
+    } satisfies ChartData<"line", number[], string>;
+  }, [
+    historicRates,
+    product.product.release_price,
+    product.product.release_price_compare,
+  ]);
 
-  const chartRef = useRef();
+  const chartRef = useRef(null);
 
   return (
     <div className="mt-4">
@@ -169,10 +190,10 @@ export function ProductCompareRow({
     <li className="p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex flex-col md:flex-row md:items-center">
-          <h2 className="text-2xl font-medium mr-3">{p.name}</h2>
+          <h2 className="text-2xl font-medium mr-3">{p.product.name}</h2>
           <p className="px-1 mt-1 md:mt-0 rounded text-sm bg-gray-400 text-gray-700">
-            Released on {dayjs(p.release_date).format("DD/MM/YYYY")} (
-            {dayjs(p.release_date).fromNow()})
+            Released on {dayjs(p.product.release_date).format("DD/MM/YYYY")} (
+            {dayjs(p.product.release_date).fromNow()})
           </p>
         </div>
 
@@ -186,28 +207,30 @@ export function ProductCompareRow({
       <div className="flex flex-wrap justify-between">
         <PriceItem
           label="Release Price $"
-          price={p.release_price}
+          price={p.product.release_price}
           currency="USD"
           info="The price set at release in $"
         />
         <PriceItem
           label="Release Price € (+tax)"
-          price={p.release_price_compare}
+          price={p.product.release_price_compare}
           currency="EUR"
           colorStyle="text-teal-300"
           info="The price set at release in €"
         />
         <PriceItem
           label="Release Price Computed € (+tax)"
-          price={Math.round(p.release_price * p.rates.EUR * 1.2 + p.fixed_tax)}
+          price={Math.round(
+            p.product.release_price * p.rates.EUR * 1.2 + p.product.fixed_tax
+          )}
           currency="EUR"
           info="The price you should have payed at release in €"
         />
         <PriceItem
           label="Computed Price Now € (+tax)"
           price={Math.round(
-            p.release_price * currentRates.rates[p.currency_compare] * 1.2 +
-              p.fixed_tax
+            p.product.release_price * (1 / currentRates.rates["USD"]) * 1.2 +
+              p.product.fixed_tax
           )}
           colorStyle="text-rose-400"
           currency="EUR"
@@ -216,10 +239,10 @@ export function ProductCompareRow({
         <PriceItem
           label="Price Diff €"
           price={
-            p.release_price_compare -
+            p.product.release_price_compare -
             Math.round(
-              p.release_price * currentRates.rates[p.currency_compare] * 1.2 +
-                p.fixed_tax
+              p.product.release_price * (1 / currentRates.rates["USD"]) * 1.2 +
+                p.product.fixed_tax
             )
           }
           currency="EUR"
@@ -227,7 +250,9 @@ export function ProductCompareRow({
         />
       </div>
 
-      {showEvolution && <EvolutionGraph product={p} />}
+      {showEvolution && (
+        <EvolutionGraph product={p} currentRate={currentRates} />
+      )}
     </li>
   );
 }

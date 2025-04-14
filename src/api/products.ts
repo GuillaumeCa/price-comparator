@@ -1,30 +1,16 @@
-import { dateToDateKey, fetchRatesAtDate } from "./exchangerate";
-import { supabase } from "./supabase";
+import { db } from "../db";
+import { productsTable, SelectProduct } from "../db/schema";
+import { getRateAtDate } from "./exchangerate";
 
-interface Product {
-  id: number;
-  created_at: string;
-  name: string;
-  release_date: string;
-  release_price: number;
-  currency: "USD";
-  release_price_compare: number;
-  currency_compare: "EUR";
-  fixed_tax: number;
-  user_id: string;
-}
-
-export interface ProductWithRates extends Product {
+export interface ProductWithRates {
+  product: SelectProduct;
   rates: {
     EUR: number;
   };
 }
 
 export async function fetchProducts(): Promise<ProductWithRates[]> {
-  const releaseDatesRates: { [key: string]: { EUR: number } } = {};
-  const { data: products, error } = await supabase
-    .from<Product>("products")
-    .select();
+  const products = await db.select().from(productsTable);
 
   if (!products) {
     return [];
@@ -33,28 +19,18 @@ export async function fetchProducts(): Promise<ProductWithRates[]> {
   const newProducts: ProductWithRates[] = [];
   for (const product of products) {
     const productWithRates: ProductWithRates = {
-      ...product,
+      product,
       rates: { EUR: 0 },
     };
     const releaseDate = new Date(product.release_date);
 
-    const key = dateToDateKey(releaseDate);
-
-    let rate = 0;
-    if (!releaseDatesRates[key]) {
-      const ratesResponse = await fetchRatesAtDate(key);
-      rate = ratesResponse.rates.EUR;
-    } else {
-      rate = releaseDatesRates[key].EUR;
-    }
-
-    productWithRates.rates.EUR = rate;
+    productWithRates.rates.EUR = await getRateAtDate(releaseDate);
     newProducts.push(productWithRates);
   }
 
   return newProducts;
 }
 
-export function insertProduct(product: Partial<Product>) {
-  return supabase.from<Product>("products").insert(product);
+export function insertProduct(product: typeof productsTable.$inferInsert) {
+  return db.insert(productsTable).values(product);
 }

@@ -1,0 +1,26 @@
+services:
+  web:
+    container_name: price-comparator
+    image: ghcr.io/guillaumeca/price-comparator:${IMAGE_TAG}
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pricecomparator.rule=Host(`price-comparator.irong.fr`)"
+      - "traefik.http.routers.pricecomparator.entrypoints=websecure"
+      - "traefik.http.routers.pricecomparator.tls.certresolver=myresolver"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.pricecomparator.middlewares=pricecomparator"
+      - "traefik.http.middlewares.pricecomparator.ratelimit.average=30"
+      - "traefik.http.middlewares.pricecomparator.ratelimit.burst=50"
+    networks:
+      - web
+    deploy:
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        order: start-first
+    mem_limit: 100m
+
+networks:
+  web:
+    external: true
