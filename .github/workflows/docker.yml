@@ -28,6 +28,7 @@ jobs:
       - name: 🎛️ Set environment
         run: |
           echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+          echo "${{ secrets.WEB_ENV_FILE }}" > .env
           echo "${{ secrets.WEB_ENV_FILE }}" > .env.production
 
       - name: 🔐 Login to Github Container Registry

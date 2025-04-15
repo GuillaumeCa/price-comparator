@@ -42,7 +42,7 @@ RUN \
 FROM base AS runner
 WORKDIR /app
 
-RUN corepack enable pnpm && pnpm i @libsql/client
+RUN corepack enable pnpm && pnpm i @libsql/client && pnpm add drizzle-kit
 
 ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
@@ -52,6 +52,8 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/drizzle.config.ts .
+COPY --from=builder /app/start-server.sh .
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
@@ -59,6 +61,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 RUN mkdir db && chown nextjs:nodejs db
+RUN chmod +x start-server.sh
 
 USER nextjs
 
@@ -70,4 +73,4 @@ ENV PORT=3000
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
 ENV HOSTNAME="0.0.0.0"
-CMD ["node", "server.js"]
+CMD ["./start-server.sh"]

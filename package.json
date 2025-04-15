@@ -6,7 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:migrate": "npx drizzle-kit generate",
+    "db:generate": "npx drizzle-kit generate",
     "db:push": "npx drizzle-kit push",
     "db:seed:rates": "tsx ./src/db/seed/rates.ts",
     "db:seed:products": "tsx ./src/db/seed/products.ts"
