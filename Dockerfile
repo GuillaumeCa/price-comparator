@@ -52,6 +52,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/drizzle.config.ts .
 COPY --from=builder /app/start-server.sh .
 
@@ -63,6 +64,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 RUN mkdir db && chown nextjs:nodejs db
 RUN chmod +x start-server.sh && chown nextjs:nodejs start-server.sh
 RUN chown nextjs:nodejs drizzle.config.ts
+RUN chown -R nextjs:nodejs drizzle
 
 
 USER nextjs
