@@ -13,7 +13,7 @@ services:
       - "traefik.http.middlewares.pricecomparator.ratelimit.average=30"
       - "traefik.http.middlewares.pricecomparator.ratelimit.burst=50"
     volumes:
-      - ./db:./db
+      - ./db:/app/db
     networks:
       - web
     deploy:
