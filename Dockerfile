@@ -61,7 +61,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 RUN mkdir db && chown nextjs:nodejs db
-RUN chmod +x start-server.sh
+RUN chmod +x start-server.sh && chown nextjs:nodejs start-server.sh
+RUN chown nextjs:nodejs drizzle.config.ts
+
 
 USER nextjs
 
