@@ -26,7 +26,7 @@ export function LinkButton({
   return (
     <Link
       href={href}
-      className="px-2 py-1 bg-gray-700 hover:bg-gray-500 rounded-md"
+      className="block px-3 py-1 bg-gray-700 hover:bg-gray-500 rounded-md"
     >
       {children}
     </Link>
