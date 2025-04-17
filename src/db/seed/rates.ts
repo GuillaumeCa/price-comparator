@@ -71,7 +71,10 @@ async function seedRates() {
       }
 
       try {
-        const d = dayjs(row[RatesCsvColumns.DATE], "YYYY-MM-DD").toDate();
+        const d = dayjs(row[RatesCsvColumns.DATE], {
+          format: "YYYY-MM-DD",
+          utc: true,
+        }).toDate();
         return {
           date: d,
           usd: getFloatValue(row[RatesCsvColumns.USD]),

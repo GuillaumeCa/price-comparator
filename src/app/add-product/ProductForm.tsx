@@ -30,9 +30,9 @@ export function ProductForm() {
         setFormState("submitting");
         await insertProductAction({
           productName: formdata.get("productName") as string,
-          releaseDate: dayjs(
-            formdata.get("releaseDate") as string
-          ).toISOString(),
+          releaseDate: dayjs(formdata.get("releaseDate") as string, {
+            utc: true,
+          }).toISOString(),
           releasePrice: parseFloat(formdata.get("releasePrice") as string),
           releasePriceCompare: parseFloat(
             formdata.get("releasePriceCompare") as string

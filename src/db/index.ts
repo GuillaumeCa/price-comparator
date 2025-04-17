@@ -11,5 +11,5 @@ const client = createClient({
 
 export const db = drizzle({
   client,
-  logger: true,
+  logger: process.env.NODE_ENV === "development",
 });

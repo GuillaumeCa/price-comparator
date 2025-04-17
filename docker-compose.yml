@@ -11,3 +11,26 @@ services:
         failure_action: rollback
         order: start-first
     mem_limit: 100m
+    environment:
+      AUTH_TRUST_HOST: true
+    volumes:
+      - ./db:/app/db
+    depends_on:
+      - migration
+
+  migration:
+    container_name: price-comparator-migration
+    build:
+      context: .
+      dockerfile: Dockerfile.migration
+    volumes:
+      - ./db:/app/db
+
+  init:
+    container_name: init
+    build:
+      context: .
+      dockerfile: Dockerfile.migration
+    command: "pnpm db:seed:rates"
+    volumes:
+      - ./db:/app/db
