@@ -33,6 +33,17 @@ services:
     volumes:
       - ./db:/app/db
 
+  cron:
+    container_name: cron
+    image: ghcr.io/guillaumeca/price-comparator/migration:${IMAGE_TAG}
+    command: >
+      sh -c "
+      echo '0 23 * * 1-5 pnpm db:seed:rates' > /etc/crontabs/root &&
+      crond -f -l 2
+      "
+    volumes:
+      - ./db:/app/db
+
 networks:
   web:
     external: true
