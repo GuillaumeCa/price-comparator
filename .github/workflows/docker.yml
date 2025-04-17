@@ -12,6 +12,10 @@ on:
       context:
         required: true
         type: string
+      dockerfile:
+        required: false
+        type: string
+        default: Dockerfile
 
 env:
   REGISTRY: ghcr.io
@@ -45,6 +49,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ${{ inputs.context }}
+          file: ${{ inputs.context }}/${{ inputs.dockerfile }}
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ env.GITHUB_SHA_SHORT }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:buildcache

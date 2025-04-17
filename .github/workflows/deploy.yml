@@ -19,13 +19,23 @@ jobs:
       context: .
     secrets: inherit
 
+  build-migration:
+    name: 🐳 Build Migration Image
+    uses: ./.github/workflows/docker.yml
+    with:
+      username: guillaumeca
+      image-name: price-comparator/migration
+      context: .
+      dockerfile: Dockerfile.migration
+    secrets: inherit
+
   deploy:
     name: 🚢 Deploy to Server
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, build-migration]
     environment:
       name: production
-      url: irong.fr
+      url: price-comparator.irong.fr
 
     steps:
       - name: 🎛️ Set environment

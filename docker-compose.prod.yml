@@ -16,12 +16,20 @@ services:
       - ./db:/app/db
     networks:
       - web
+    depends_on:
+      - migration
     deploy:
       update_config:
         parallelism: 1
         failure_action: rollback
         order: start-first
     mem_limit: 100m
+
+  migration:
+    container_name: price-comparator-migration
+    image: ghcr.io/guillaumeca/price-comparator/migration:${IMAGE_TAG}
+    volumes:
+      - ./db:/app/db
 
 networks:
   web:
