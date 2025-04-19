@@ -1,3 +1,5 @@
+import { eq, isNull, or } from "drizzle-orm";
+import { auth } from "../app/auth";
 import { db } from "../db";
 import { productsTable, SelectProduct } from "../db/schema";
 import { getRateAtDate } from "./exchangerate";
@@ -10,7 +12,16 @@ export interface ProductWithRates {
 }
 
 export async function fetchProducts(): Promise<ProductWithRates[]> {
-  const products = await db.select().from(productsTable);
+  const session = await auth();
+  const userId = session?.user.id;
+  const products = await db
+    .select()
+    .from(productsTable)
+    .where(
+      userId
+        ? or(eq(productsTable.user_id, userId), isNull(productsTable.user_id))
+        : isNull(productsTable.user_id)
+    );
 
   if (!products) {
     return [];
